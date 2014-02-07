@@ -1,0 +1,32 @@
+#!/usr/bin/env ruby
+
+require 'rubygems' unless RUBY_VERSION.to_i > 1.9
+require 'git'
+
+call_path = ENV["PWD"]
+remote_name = ARGV[0]
+
+begin
+    git = Git.open(call_path)
+rescue ArgumentError => e
+    system("echo \"gto: #{call_path}: Not a git repository\"")
+    exit
+else
+    if !remote_name
+        system("echo 'gto: Please enter a remote name'")
+        exit
+    end
+
+    if git && git.remote(remote_name).url
+        remote_url = git.remote(remote_name).url.gsub(/git@/, 'http://').gsub(/\.git/, '').gsub(/\.com:/, '.com/')
+        sys = `uname -s`.chomp
+        if sys == "Darwin"
+            open_cmd = "open"
+        elsif sys == "Linux"
+            open_cmd = "xdg-open"
+        end
+        `#{open_cmd} \"#{remote_url}\"`
+    else
+        system("echo \"gto: #{remote_name}: No such remote. Available remotes: #{git.remotes.join(", ")}\"")
+    end
+end

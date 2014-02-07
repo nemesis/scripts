@@ -1,0 +1,28 @@
+#!/usr/bin/env ruby
+
+require 'rubygems' unless RUBY_VERSION.to_i > 1.9
+require 'git'
+
+call_path = ENV["PWD"]
+
+begin
+    git = Git.open(call_path)
+rescue ArgumentError => e
+    system("echo \"gto: #{call_path}: Not a git repository\"")
+    exit
+else
+
+    if git
+        branch_name = `git rev-parse --abbrev-ref HEAD`.chomp
+        remote_url = git.remote("origin").url.gsub(/git@/, 'http://').gsub(/\.git/, '').gsub(/\.com:/, '.com/') + "/compare/" + branch_name + "?expand=1"
+        sys = `uname -s`.chomp
+        if sys == "Darwin"
+            open_cmd = "open"
+        elsif sys == "Linux"
+            open_cmd = "xdg-open"
+        end
+        `#{open_cmd} \"#{remote_url}\"`
+    else
+        system("echo \"gtr: Could not open.\"")
+    end
+end
