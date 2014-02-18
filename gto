@@ -12,9 +12,13 @@ rescue ArgumentError => e
     system("echo \"gto: #{call_path}: Not a git repository\"")
     exit
 else
-    if !remote_name
-        system("echo 'gto: Please enter a remote name'")
-        exit
+    if git.remotes.length > 1
+        if !remote_name
+            system("echo 'gto: Please enter a remote name'")
+            exit
+        end
+    else
+        remote_name = git.remotes.first.name unless remote_name
     end
 
     if git && git.remote(remote_name).url
